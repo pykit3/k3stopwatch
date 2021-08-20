@@ -8,34 +8,10 @@ k3stopwatch
 
 .. automodule:: k3stopwatch
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-.. contents::
-   :depth: 4
-   :local:
 
 Documentation for the Code
 **************************
 
-Exceptions
-----------
-
-.. autoexception::  SomeError
-
-
-Classes
-----------
-
-.. autoclass::  Bar
-    :members:
-
-
-Functions
----------
-
-.. autofunction::  foo
 
 Indices and tables
 ==================

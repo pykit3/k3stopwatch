@@ -1,32 +1,16 @@
 """
-k3stopwatch is utility to .
+StopWatch operates on a notion of "spans" which represent scopes of code for which we
+want to measure timing. Spans can be nested and placed inside loops for aggregation.
 
-Execute a shell script::
+StopWatch requires a root scope which upon completion signifies the end of the round
+of measurements. On a server, you might use a single request as your root scope.
 
-    import k3stopwatch
-
-    # execute a shell script
-
-    returncode, out, err = pk3proc.shell_script('ls / | grep bin')
-    print returncode
-    print out
-    # output:
-    # > 0
-    # > bin
-    # > sbin
-
-Run a command::
-
-    # Unlike the above snippet, following statement does not start an sh process.
-    returncode, out, err = pk3proc.command('ls', 'a*', cwd='/usr/local')
-
+StopWatch produces two kinds of reports.
+1) Aggregated (see _reported_values).
+2) Non-aggregated or "tracing" (see _reported_traces).
 """
 
-# from .proc import CalledProcessError
-# from .proc import ProcError
 
 __version__ = "0.1.0"
 __name__ = "k3stopwatch"
 
-from .k3stopwatch import foo
-from .k3stopwatch import SomeError

@@ -1,6 +1,6 @@
 _extends: gh-config
 
 repository:
-  description: no desc
+  description: StopWatch - library for adding timers and tags in your code for performance monitoring
   homepage: https://blog.openacid.com
-  topics: tag1, tag2
+  topics: python, stopwatch

@@ -27,9 +27,9 @@ have 51 reports. This is great for digging into a data for a particular request,
 or constructing waterfall graphs.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+
+
+
 
 import collections
 import contextlib

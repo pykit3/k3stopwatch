@@ -29,3 +29,4 @@ class TestK3stopwatch(unittest.TestCase):
 
     def test_procerror(self):
         pass
+
