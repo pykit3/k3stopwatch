@@ -2,14 +2,14 @@ import os
 import unittest
 
 import k3ut
-import {{ name }}
+import k3stopwatch
 
 dd = k3ut.dd
 
 this_base = os.path.dirname(__file__)
 
 
-class Test{{ nameBig }}(unittest.TestCase):
+class TestK3stopwatch(unittest.TestCase):
 
     foo_fn = '/tmp/foo'
 
@@ -29,3 +29,4 @@ class Test{{ nameBig }}(unittest.TestCase):
 
     def test_procerror(self):
         pass
+
