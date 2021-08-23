@@ -11,6 +11,24 @@ StopWatch produces two kinds of reports.
 """
 
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __name__ = "k3stopwatch"
+
+from .k3stopwatch import (
+    TimerData,
+    StopWatch,
+
+    default_export_aggregated_timers,
+    default_export_tracing,
+    format_report,
+) 
+
+__all__ = [
+    'TimerData',
+    'StopWatch',
+
+    'default_export_aggregated_timers',
+    'default_export_tracing',
+    'format_report',
+]
 
