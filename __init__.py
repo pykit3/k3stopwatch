@@ -10,25 +10,22 @@ StopWatch produces two kinds of reports.
 2) Non-aggregated or "tracing" (see _reported_traces).
 """
 
+from importlib.metadata import version
 
-__version__ = "0.1.1"
-__name__ = "k3stopwatch"
+__version__ = version("k3stopwatch")
 
 from .k3stopwatch import (
     TimerData,
     StopWatch,
-
     default_export_aggregated_timers,
     default_export_tracing,
     format_report,
-) 
+)
 
 __all__ = [
-    'TimerData',
-    'StopWatch',
-
-    'default_export_aggregated_timers',
-    'default_export_tracing',
-    'format_report',
+    "TimerData",
+    "StopWatch",
+    "default_export_aggregated_timers",
+    "default_export_tracing",
+    "format_report",
 ]
-

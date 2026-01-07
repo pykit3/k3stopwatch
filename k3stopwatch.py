@@ -27,18 +27,14 @@ have 51 reports. This is great for digging into a data for a particular request,
 or constructing waterfall graphs.
 """
 
-
-
-
-
 import collections
 import contextlib
 import random as insecure_random
 import time
 
-TraceAnnotation = collections.namedtuple('TraceKeyValueAnnotation', ['key', 'value', 'time'])
-AggregatedReport = collections.namedtuple('AggregatedReport',
-                                          ['aggregated_values', 'root_timer_data'])
+TraceAnnotation = collections.namedtuple("TraceKeyValueAnnotation", ["key", "value", "time"])
+AggregatedReport = collections.namedtuple("AggregatedReport", ["aggregated_values", "root_timer_data"])
+
 
 class TimerData(object):
     """
@@ -47,18 +43,18 @@ class TimerData(object):
     """
 
     __slots__ = (
-        'span_id',
-        'name',
-        'start_time',
-        'end_time',
-        'trace_annotations',
-        'parent_span_id',
-        'log_name',
+        "span_id",
+        "name",
+        "start_time",
+        "end_time",
+        "trace_annotations",
+        "parent_span_id",
+        "log_name",
     )
 
     def __init__(self, name, start_time, parent_name):
         # Generate new span id.
-        self.span_id = '%032x' % insecure_random.getrandbits(128)
+        self.span_id = "%032x" % insecure_random.getrandbits(128)
         self.name = name
         self.start_time = start_time
         self.end_time = None  # Gets filled in later
@@ -66,13 +62,12 @@ class TimerData(object):
         self.parent_span_id = None  # Gets filled in at the end
 
         if parent_name:
-            self.log_name = parent_name + '#' + name
+            self.log_name = parent_name + "#" + name
         else:
             self.log_name = name
 
     def __repr__(self):
-        return ('name=%r, span_id=%r start_time=%r end_time=%r annotations=%r, parent_span_id=%r,'
-                'log_name=%r') % (
+        return ("name=%r, span_id=%r start_time=%r end_time=%r annotations=%r, parent_span_id=%r,log_name=%r") % (
             self.name,
             self.span_id,
             self.start_time,
@@ -82,15 +77,14 @@ class TimerData(object):
             self.log_name,
         )
 
+
 def format_report(aggregated_report):
     """returns a pretty printed string of reported values"""
     values = aggregated_report.aggregated_values
     root_tr_data = aggregated_report.root_timer_data
 
     # fetch all values only for main stopwatch, ignore all the tags
-    log_names = sorted(
-        log_name for log_name in values if "+" not in log_name
-    )
+    log_names = sorted(log_name for log_name in values if "+" not in log_name)
     if not log_names:
         return
 
@@ -104,41 +98,50 @@ def format_report(aggregated_report):
     ]
     for log_name in log_names[1:]:
         delta_ms, count, bucket = values[log_name]
-        depth = log_name[len(root):].count("#")
-        short_name = log_name[log_name.rfind("#") + 1:]
+        depth = log_name[len(root) :].count("#")
+        short_name = log_name[log_name.rfind("#") + 1 :]
         bucket_name = bucket.name if bucket else ""
 
-        buf.append("%s%s    %s %4d  %.3fms (%.f%%)" % (
-            "    " * depth, bucket_name.ljust(12),
-            short_name.ljust(20),
-            count,
-            delta_ms,
-            delta_ms / root_time_ms * 100.0,
-        ))
+        buf.append(
+            "%s%s    %s %4d  %.3fms (%.f%%)"
+            % (
+                "    " * depth,
+                bucket_name.ljust(12),
+                short_name.ljust(20),
+                count,
+                delta_ms,
+                delta_ms / root_time_ms * 100.0,
+            )
+        )
 
     annotations = sorted(ann.key for ann in root_tr_data.trace_annotations)
-    buf.append("Annotations: %s" % (', '.join(annotations)))
+    buf.append("Annotations: %s" % (", ".join(annotations)))
     return "\n".join(buf)
+
 
 def default_export_tracing(reported_traces):
     """Default implementation of non-aggregated trace logging"""
     pass
 
+
 def default_export_aggregated_timers(aggregated_report):
     """Default implementation of aggregated timer logging"""
     pass
+
 
 class StopWatch(object):
     """StopWatch - main class for storing timer stack and exposing timer functions/contextmanagers
     to the rest of the code"""
 
-    def __init__(self,
-                 strict_assert=True,
-                 export_tracing_func=None,
-                 export_aggregated_timers_func=None,
-                 max_tracing_spans_for_path=1000,
-                 min_tracing_milliseconds=3,
-                 time_func=None):
+    def __init__(
+        self,
+        strict_assert=True,
+        export_tracing_func=None,
+        export_aggregated_timers_func=None,
+        max_tracing_spans_for_path=1000,
+        min_tracing_milliseconds=3,
+        time_func=None,
+    ):
         """
         Arguments:
           strict_assert: If True, assert on callsite misuse
@@ -163,9 +166,7 @@ class StopWatch(object):
         self._timer_stack = []
         self._strict_assert = strict_assert
         self._export_tracing_func = export_tracing_func or default_export_tracing
-        self._export_aggregated_timers_func = (
-            export_aggregated_timers_func or default_export_aggregated_timers
-        )
+        self._export_aggregated_timers_func = export_aggregated_timers_func or default_export_aggregated_timers
         self._time_func = time_func or time.time
         self.MAX_REQUEST_TRACING_SPANS_FOR_PATH = max_tracing_spans_for_path
         self.TRACING_MIN_NUM_MILLISECONDS = min_tracing_milliseconds
@@ -177,8 +178,7 @@ class StopWatch(object):
     def _reset(self):
         """Reset internal timer stack when stack is cleared"""
         if self._timer_stack:
-            assert not self._strict_assert, \
-                "StopWatch reset() but stack not empty: %r" % (self._timer_stack,)
+            assert not self._strict_assert, "StopWatch reset() but stack not empty: %r" % (self._timer_stack,)
         self._reported_values = {}
         self._reported_traces = []
         self._root_annotations = []
@@ -207,7 +207,7 @@ class StopWatch(object):
         try:
             yield
         except Exception as e:
-            self.add_annotation('Exception', type(e).__name__, event_time=end_time)
+            self.add_annotation("Exception", type(e).__name__, event_time=end_time)
             raise
         finally:
             if name in self._cancelled_spans:
@@ -225,11 +225,13 @@ class StopWatch(object):
         """
         if start_time is None:
             start_time = self._time_func()
-        self._timer_stack.append(TimerData(
-            name=name,
-            start_time=start_time,
-            parent_name=self._timer_stack[-1].log_name if self._timer_stack else None
-        ))
+        self._timer_stack.append(
+            TimerData(
+                name=name,
+                start_time=start_time,
+                parent_name=self._timer_stack[-1].log_name if self._timer_stack else None,
+            )
+        )
 
     def end(self, name, end_time=None, bucket=None):
         """End a stopwatch span (must match latest started span)
@@ -271,9 +273,7 @@ class StopWatch(object):
             threshold_s = tr_delta_ms / 1000.0
             for slowtag, timelimit in self._slow_annotations.items():
                 if timelimit <= threshold_s:
-                    tr_data.trace_annotations.append(
-                        TraceAnnotation(slowtag, '1', tr_data.end_time)
-                    )
+                    tr_data.trace_annotations.append(TraceAnnotation(slowtag, "1", tr_data.end_time))
 
         if self._should_trace_timer(log_name, tr_delta_ms):
             tr_data.parent_span_id = self._timer_stack[-1].span_id if self._timer_stack else None
@@ -298,10 +298,10 @@ class StopWatch(object):
             name:
                 Name of the scope that's being cancelled. Must match the latest start().
         """
-        self._pop_stack(name, end_type='cancel')
+        self._pop_stack(name, end_type="cancel")
         self._cancelled_spans[name] = 1
 
-    def add_annotation(self, key, value='1', event_time=None):
+    def add_annotation(self, key, value="1", event_time=None):
         """Add an annotation to the root scope. Note that we don't do this directly
         in order to support this case:
 
@@ -313,17 +313,13 @@ class StopWatch(object):
         """
         if event_time is None:
             event_time = self._time_func()
-        self._root_annotations.append(
-            TraceAnnotation(key, value, event_time)
-        )
+        self._root_annotations.append(TraceAnnotation(key, value, event_time))
 
-    def add_span_annotation(self, key, value='1', event_time=None):
+    def add_span_annotation(self, key, value="1", event_time=None):
         """Add an annotation to the current scope"""
         if event_time is None:
             event_time = self._time_func()
-        self._timer_stack[-1].trace_annotations.append(
-            TraceAnnotation(key, value, event_time)
-        )
+        self._timer_stack[-1].trace_annotations.append(TraceAnnotation(key, value, event_time))
 
     def add_slow_annotation(self, tag, timelimit):
         """add annotation that will only be used if root scope takes longer than
@@ -351,17 +347,20 @@ class StopWatch(object):
     # Private methods
     #################
 
-    def _pop_stack(self, name, end_type='end'):
+    def _pop_stack(self, name, end_type="end"):
         """Remove elements off the top of the timer stack until the element with name `name` is found.
         Return that element."""
         if not self._timer_stack:
-            assert not self._strict_assert, \
-                "StopWatch %s called but stack is empty: %s" % (end_type, name,)
+            assert not self._strict_assert, "StopWatch %s called but stack is empty: %s" % (
+                end_type,
+                name,
+            )
             return
 
         tr_data = self._timer_stack.pop()
-        assert (not self._strict_assert) or (tr_data.name == name), \
+        assert (not self._strict_assert) or (tr_data.name == name), (
             "StopWatch %s: %s, does not match latest start: %s" % (end_type, name, tr_data.name)
+        )
 
         # if the top element on stack doesn't match "name", need to pop off things from the stack
         # till it matches to maximally negate the possible inconsistencies
@@ -381,5 +380,7 @@ class StopWatch(object):
         # is making for loop with 50k stopwatches, we will log only the first
         # MAX_REQUEST_TRACING_SPANS_FOR_PATH spans.
 
-        return bool(log_name not in self._reported_values or
-                    self._reported_values[log_name][1] <= self.MAX_REQUEST_TRACING_SPANS_FOR_PATH)
+        return bool(
+            log_name not in self._reported_values
+            or self._reported_values[log_name][1] <= self.MAX_REQUEST_TRACING_SPANS_FOR_PATH
+        )
