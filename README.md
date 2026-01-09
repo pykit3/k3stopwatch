@@ -1,7 +1,6 @@
 # k3stopwatch
 
 [![Action-CI](https://github.com/pykit3/k3stopwatch/actions/workflows/python-package.yml/badge.svg)](https://github.com/pykit3/k3stopwatch/actions/workflows/python-package.yml)
-[![Build Status](https://travis-ci.com/pykit3/k3stopwatch.svg?branch=master)](https://travis-ci.com/pykit3/k3stopwatch)
 [![Documentation Status](https://readthedocs.org/projects/k3stopwatch/badge/?version=stable)](https://k3stopwatch.readthedocs.io/en/stable/?badge=stable)
 [![Package](https://img.shields.io/pypi/pyversions/k3stopwatch)](https://pypi.org/project/k3stopwatch)
 
