@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "k3stopwatch"
-version = "0.1.2"
+version = "0.1.3"
 description = "Hierarchical timing measurement with aggregated and tracing reports"
 readme = "README.md"
 license = {text = "MIT"}
