@@ -15,16 +15,16 @@ from importlib.metadata import version
 __version__ = version("k3stopwatch")
 
 from .k3stopwatch import (
-    TimerData,
     StopWatch,
+    TimerData,
     default_export_aggregated_timers,
     default_export_tracing,
     format_report,
 )
 
 __all__ = [
-    "TimerData",
     "StopWatch",
+    "TimerData",
     "default_export_aggregated_timers",
     "default_export_tracing",
     "format_report",

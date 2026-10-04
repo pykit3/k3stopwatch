@@ -36,25 +36,25 @@ TraceAnnotation = collections.namedtuple("TraceKeyValueAnnotation", ["key", "val
 AggregatedReport = collections.namedtuple("AggregatedReport", ["aggregated_values", "root_timer_data"])
 
 
-class TimerData(object):
+class TimerData:
     """
     Simple object that wraps all data needed for a single timer span.
     The StopWatch object maintains a stack of these timers.
     """
 
     __slots__ = (
-        "span_id",
-        "name",
-        "start_time",
         "end_time",
-        "trace_annotations",
-        "parent_span_id",
         "log_name",
+        "name",
+        "parent_span_id",
+        "span_id",
+        "start_time",
+        "trace_annotations",
     )
 
     def __init__(self, name, start_time, parent_name):
         # Generate new span id.
-        self.span_id = "%032x" % insecure_random.getrandbits(128)
+        self.span_id = f"{insecure_random.getrandbits(128):032x}"
         self.name = name
         self.start_time = start_time
         self.end_time = None  # Gets filled in later
@@ -67,14 +67,10 @@ class TimerData(object):
             self.log_name = name
 
     def __repr__(self):
-        return ("name=%r, span_id=%r start_time=%r end_time=%r annotations=%r, parent_span_id=%r,log_name=%r") % (
-            self.name,
-            self.span_id,
-            self.start_time,
-            self.end_time,
-            self.trace_annotations,
-            self.parent_span_id,
-            self.log_name,
+        return (
+            f"name={self.name!r}, span_id={self.span_id!r} start_time={self.start_time!r} "
+            f"end_time={self.end_time!r} annotations={self.trace_annotations!r}, "
+            f"parent_span_id={self.parent_span_id!r},log_name={self.log_name!r}"
         )
 
 
@@ -94,42 +90,34 @@ def format_report(aggregated_report):
         "************************",
         "*** StopWatch Report ***",
         "************************",
-        "%s    %.3fms (%.f%%)" % (root.ljust(20), root_time_ms / root_count, 100),
+        f"{root.ljust(20)}    {root_time_ms / root_count:.3f}ms (100%)",
     ]
     for log_name in log_names[1:]:
         delta_ms, count, bucket = values[log_name]
         depth = log_name[len(root) :].count("#")
         short_name = log_name[log_name.rfind("#") + 1 :]
         bucket_name = bucket.name if bucket else ""
+        indent = "    " * depth
+        percent = delta_ms / root_time_ms * 100.0
 
         buf.append(
-            "%s%s    %s %4d  %.3fms (%.f%%)"
-            % (
-                "    " * depth,
-                bucket_name.ljust(12),
-                short_name.ljust(20),
-                count,
-                delta_ms,
-                delta_ms / root_time_ms * 100.0,
-            )
+            f"{indent}{bucket_name.ljust(12)}    {short_name.ljust(20)} {count:4d}  {delta_ms:.3f}ms ({percent:.0f}%)"
         )
 
     annotations = sorted(ann.key for ann in root_tr_data.trace_annotations)
-    buf.append("Annotations: %s" % (", ".join(annotations)))
+    buf.append(f"Annotations: {', '.join(annotations)}")
     return "\n".join(buf)
 
 
 def default_export_tracing(reported_traces):
     """Default implementation of non-aggregated trace logging"""
-    pass
 
 
 def default_export_aggregated_timers(aggregated_report):
     """Default implementation of aggregated timer logging"""
-    pass
 
 
-class StopWatch(object):
+class StopWatch:
     """StopWatch - main class for storing timer stack and exposing timer functions/contextmanagers
     to the rest of the code"""
 
@@ -178,7 +166,7 @@ class StopWatch(object):
     def _reset(self):
         """Reset internal timer stack when stack is cleared"""
         if self._timer_stack:
-            assert not self._strict_assert, "StopWatch reset() but stack not empty: %r" % (self._timer_stack,)
+            assert not self._strict_assert, f"StopWatch reset() but stack not empty: {self._timer_stack!r}"
         self._reported_values = {}
         self._reported_traces = []
         self._root_annotations = []
@@ -351,15 +339,12 @@ class StopWatch(object):
         """Remove elements off the top of the timer stack until the element with name `name` is found.
         Return that element."""
         if not self._timer_stack:
-            assert not self._strict_assert, "StopWatch %s called but stack is empty: %s" % (
-                end_type,
-                name,
-            )
+            assert not self._strict_assert, f"StopWatch {end_type} called but stack is empty: {name}"
             return
 
         tr_data = self._timer_stack.pop()
         assert (not self._strict_assert) or (tr_data.name == name), (
-            "StopWatch %s: %s, does not match latest start: %s" % (end_type, name, tr_data.name)
+            f"StopWatch {end_type}: {name}, does not match latest start: {tr_data.name}"
         )
 
         # if the top element on stack doesn't match "name", need to pop off things from the stack

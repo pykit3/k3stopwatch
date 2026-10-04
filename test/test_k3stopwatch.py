@@ -15,7 +15,7 @@ class TestK3stopwatch(unittest.TestCase):
         # remove written file
         try:
             os.unlink(self.foo_fn)
-        except EnvironmentError:
+        except OSError:
             pass
 
     def setUp(self):

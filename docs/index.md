@@ -24,13 +24,13 @@ import k3stopwatch
 
 sw = k3stopwatch.StopWatch()
 
-with sw.timer('root'):
-    with sw.timer('task_a'):
+with sw.timer("root"):
+    with sw.timer("task_a"):
         # do some work
         pass
 
     for i in range(10):
-        with sw.timer('loop_iteration'):
+        with sw.timer("loop_iteration"):
             # timed loop
             pass
 
