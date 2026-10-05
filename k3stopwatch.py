@@ -234,7 +234,7 @@ class StopWatch:
                 overall how much time is spent in databases.
         """
 
-        if not end_time:
+        if end_time is None:
             end_time = self._time_func()
 
         tr_data = self._pop_stack(name)
