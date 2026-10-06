@@ -46,3 +46,89 @@ class TestK3stopwatch(unittest.TestCase):
 
         sw.start("root")
         self.assertRaises(RuntimeError, sw.end, "other")
+
+    def test_nested(self):
+        now = [0]
+        sw = k3stopwatch.StopWatch(time_func=lambda: now[0])
+
+        with sw.timer("root"):
+            for _ in range(2):
+                with sw.timer("child"), sw.timer("grandchild"):
+                    now[0] += 1
+            now[0] += 1
+
+        report = sw.get_last_aggregated_report()
+        self.assertEqual(
+            {
+                "root": [3000.0, 1, None],
+                "root#child": [2000.0, 2, None],
+                "root#child#grandchild": [2000.0, 2, None],
+            },
+            report.aggregated_values,
+        )
+
+        traces = sw.get_last_trace_report()
+        names = {t.span_id: t.log_name for t in traces}
+        spans = [(t.log_name, t.start_time, t.end_time, names.get(t.parent_span_id)) for t in traces]
+        self.assertEqual(
+            [
+                ("root#child#grandchild", 0, 1, "root#child"),
+                ("root#child", 0, 1, "root"),
+                ("root#child#grandchild", 1, 2, "root#child"),
+                ("root#child", 1, 2, "root"),
+                ("root", 0, 3, None),
+            ],
+            spans,
+        )
+
+    def test_cancel(self):
+        now = [0]
+        sw = k3stopwatch.StopWatch(time_func=lambda: now[0])
+
+        with sw.timer("root"):
+            with sw.timer("cancelled"):
+                now[0] += 1
+                sw.cancel("cancelled")
+            with sw.timer("kept"):
+                now[0] += 1
+
+        report = sw.get_last_aggregated_report()
+        self.assertEqual({"root": [2000.0, 1, None], "root#kept": [1000.0, 1, None]}, report.aggregated_values)
+
+        traces = sw.get_last_trace_report()
+        trace_names = [t.log_name for t in traces]
+        self.assertEqual(["root#kept", "root"], trace_names)
+
+    def test_export(self):
+        now = [0]
+        exported_traces = []
+        exported_reports = []
+
+        sw = k3stopwatch.StopWatch(
+            time_func=lambda: now[0],
+            export_tracing_func=lambda reported_traces: exported_traces.append(reported_traces),
+            export_aggregated_timers_func=lambda aggregated_report: exported_reports.append(aggregated_report),
+        )
+
+        with sw.timer("root"):
+            with sw.timer("child"):
+                now[0] += 1
+
+            # Only the end of the root span exports.
+            self.assertEqual([], exported_traces)
+            self.assertEqual([], exported_reports)
+
+        with sw.timer("root"):
+            now[0] += 2
+
+        trace_names = [[t.log_name for t in traces] for traces in exported_traces]
+        self.assertEqual([["root#child", "root"], ["root"]], trace_names)
+
+        aggregated_values = [r.aggregated_values for r in exported_reports]
+        self.assertEqual(
+            [
+                {"root": [1000.0, 1, None], "root#child": [1000.0, 1, None]},
+                {"root": [2000.0, 1, None]},
+            ],
+            aggregated_values,
+        )
