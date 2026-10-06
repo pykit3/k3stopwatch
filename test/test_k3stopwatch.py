@@ -38,3 +38,11 @@ class TestK3stopwatch(unittest.TestCase):
         report = sw.get_last_aggregated_report()
         self.assertEqual(0, report.root_timer_data.end_time)
         self.assertEqual({"root": [0.001, 1, None]}, report.aggregated_values)
+
+    def test_strict_misuse(self):
+        sw = k3stopwatch.StopWatch(strict_assert=True)
+        self.assertRaises(RuntimeError, sw.end, "root")
+        self.assertRaises(RuntimeError, sw.cancel, "root")
+
+        sw.start("root")
+        self.assertRaises(RuntimeError, sw.end, "other")

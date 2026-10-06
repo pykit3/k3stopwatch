@@ -132,7 +132,7 @@ class StopWatch:
     ):
         """
         Arguments:
-          strict_assert(bool): If True, assert on callsite misuse
+          strict_assert(bool): If True, raise RuntimeError on callsite misuse
 
           export_tracing_func(callable): Function to log tracing data when stack empties
 
@@ -339,13 +339,13 @@ class StopWatch:
         """Remove elements off the top of the timer stack until the element with name `name` is found.
         Return that element."""
         if not self._timer_stack:
-            assert not self._strict_assert, f"StopWatch {end_type} called but stack is empty: {name}"
+            if self._strict_assert:
+                raise RuntimeError(f"StopWatch {end_type} called but stack is empty: {name!r}")
             return
 
         tr_data = self._timer_stack.pop()
-        assert (not self._strict_assert) or (tr_data.name == name), (
-            f"StopWatch {end_type}: {name}, does not match latest start: {tr_data.name}"
-        )
+        if self._strict_assert and tr_data.name != name:
+            raise RuntimeError(f"StopWatch {end_type}: {name!r}, does not match latest start: {tr_data.name!r}")
 
         # if the top element on stack doesn't match "name", need to pop off things from the stack
         # till it matches to maximally negate the possible inconsistencies
