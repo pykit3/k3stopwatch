@@ -132,22 +132,22 @@ class StopWatch:
     ):
         """
         Arguments:
-          strict_assert: If True, assert on callsite misuse
+          strict_assert(bool): If True, assert on callsite misuse
 
-          export_tracing_func: Function to log tracing data when stack empties
+          export_tracing_func(callable): Function to log tracing data when stack empties
 
-          export_aggregated_timers_func: Function to log timers when stack empties
+          export_aggregated_timers_func(callable): Function to log timers when stack empties
 
-          max_tracing_spans_for_path:
+          max_tracing_spans_for_path(int):
             The maximum number of spans to be logged per root scope for
             each unique path, so we make sure we aren't too excessive on the
             non-aggregated tracing report
 
-          min_tracing_milliseconds:
+          min_tracing_milliseconds(float):
             To reduce the large number of trivial spans, don't trace
             anything that takes less then this amount of time.
 
-          time_func:
+          time_func(callable):
             Function which returns the current time in seconds. Defaults to time.time
         """
 
