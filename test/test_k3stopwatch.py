@@ -47,6 +47,12 @@ class TestK3stopwatch(unittest.TestCase):
         sw.start("root")
         self.assertRaises(RuntimeError, sw.end, "other")
 
+    def test_non_strict_end_on_empty_stack(self):
+        sw = k3stopwatch.StopWatch(strict_assert=False)
+        sw.end("root")
+
+        self.assertIsNone(sw.get_last_aggregated_report())
+
     def test_nested(self):
         now = [0]
         sw = k3stopwatch.StopWatch(time_func=lambda: now[0])

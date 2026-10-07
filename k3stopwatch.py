@@ -238,6 +238,9 @@ class StopWatch:
             end_time = self._time_func()
 
         tr_data = self._pop_stack(name)
+        if tr_data is None:
+            return
+
         tr_data.end_time = end_time
         log_name = tr_data.log_name
 
