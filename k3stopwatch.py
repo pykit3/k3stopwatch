@@ -145,7 +145,7 @@ class StopWatch:
 
           min_tracing_milliseconds(float):
             To reduce the large number of trivial spans, don't trace
-            anything that takes less then this amount of time.
+            anything that takes less than this amount of time.
 
           time_func(callable):
             Function which returns the current time in seconds. Defaults to time.time
