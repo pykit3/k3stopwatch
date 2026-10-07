@@ -105,6 +105,20 @@ class TestK3stopwatch(unittest.TestCase):
         trace_names = [t.log_name for t in traces]
         self.assertEqual(["root#kept", "root"], trace_names)
 
+    def test_timer_after_cancel_of_same_name(self):
+        now = [0]
+        sw = k3stopwatch.StopWatch(time_func=lambda: now[0])
+
+        sw.start("root")
+        sw.start("a")
+        sw.cancel("a")
+        with sw.timer("a"):
+            now[0] += 1
+        sw.end("root")
+
+        report = sw.get_last_aggregated_report()
+        self.assertEqual({"root": [1000.0, 1, None], "root#a": [1000.0, 1, None]}, report.aggregated_values)
+
     def test_export(self):
         now = [0]
         exported_traces = []

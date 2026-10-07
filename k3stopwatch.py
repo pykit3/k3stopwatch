@@ -172,10 +172,6 @@ class StopWatch:
         self._root_annotations = []
         self._slow_annotations = {}
 
-        # Dictionary of span names that have been cancelled in the current
-        # context. Used to ensure that a cancelled span is not redundantly ended as well.
-        self._cancelled_spans = {}
-
     ################
     # Public methods
     ################
@@ -192,15 +188,15 @@ class StopWatch:
     def timer(self, name, bucket=None, start_time=None, end_time=None):
         """Context manager to wrap a stopwatch span"""
         self.start(name, start_time=start_time)
+        tr_data = self._timer_stack[-1]
         try:
             yield
         except Exception as e:
             self.add_annotation("Exception", type(e).__name__, event_time=end_time)
             raise
         finally:
-            if name in self._cancelled_spans:
-                del self._cancelled_spans[name]
-            else:
+            # cancel() may have removed this span; end() would then pop another one.
+            if any(t is tr_data for t in self._timer_stack):
                 self.end(name, end_time=end_time, bucket=bucket)
 
     def start(self, name, start_time=None):
@@ -290,7 +286,6 @@ class StopWatch:
                 Name of the scope that's being cancelled. Must match the latest start().
         """
         self._pop_stack(name, end_type="cancel")
-        self._cancelled_spans[name] = 1
 
     def add_annotation(self, key, value="1", event_time=None):
         """Add an annotation to the root scope. Note that we don't do this directly
