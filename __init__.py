@@ -10,10 +10,6 @@ StopWatch produces two kinds of reports.
 2) Non-aggregated or "tracing" (see _reported_traces).
 """
 
-from importlib.metadata import version
-
-__version__ = version("k3stopwatch")
-
 from .k3stopwatch import (
     StopWatch,
     TimerData,
@@ -29,3 +25,14 @@ __all__ = [
     "default_export_tracing",
     "format_report",
 ]
+
+
+def __getattr__(name: str) -> str:
+    # importlib.metadata takes about 20 ms to import, so it is loaded only
+    # when __version__ is read
+    if name != "__version__":
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+    from importlib.metadata import version
+
+    return version("k3stopwatch")
