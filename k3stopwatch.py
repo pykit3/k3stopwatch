@@ -285,7 +285,13 @@ class StopWatch:
             name:
                 Name of the scope that's being cancelled. Must match the latest start().
         """
-        self._pop_stack(name, end_type="cancel")
+        tr_data = self._pop_stack(name, end_type="cancel")
+        if tr_data is None:
+            return
+
+        # Cancelling the root ends the round: drop what its spans reported, as end() does after exporting.
+        if not self._timer_stack:
+            self._reset()
 
     def add_annotation(self, key, value="1", event_time=None):
         """Add an annotation to the root scope. Note that we don't do this directly
