@@ -40,12 +40,18 @@ class TestK3stopwatch(unittest.TestCase):
         self.assertEqual({"root": [0.001, 1, None]}, report.aggregated_values)
 
     def test_strict_misuse(self):
-        sw = k3stopwatch.StopWatch(strict_assert=True)
+        sw = k3stopwatch.StopWatch(strict_assert=True, time_func=lambda: 0)
         self.assertRaises(RuntimeError, sw.end, "root")
         self.assertRaises(RuntimeError, sw.cancel, "root")
 
         sw.start("root")
         self.assertRaises(RuntimeError, sw.end, "other")
+        self.assertRaises(RuntimeError, sw.cancel, "other")
+
+        # The rejected calls keep "root" running.
+        sw.end("root")
+        report = sw.get_last_aggregated_report()
+        self.assertEqual({"root": [0.001, 1, None]}, report.aggregated_values)
 
     def test_non_strict_end_on_empty_stack(self):
         sw = k3stopwatch.StopWatch(strict_assert=False)

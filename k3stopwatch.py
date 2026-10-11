@@ -341,9 +341,12 @@ class StopWatch:
                 raise RuntimeError(f"StopWatch {end_type} called but stack is empty: {name!r}")
             return
 
+        # Check before popping, so a rejected call leaves the stack unchanged.
+        latest = self._timer_stack[-1]
+        if self._strict_assert and latest.name != name:
+            raise RuntimeError(f"StopWatch {end_type}: {name!r}, does not match latest start: {latest.name!r}")
+
         tr_data = self._timer_stack.pop()
-        if self._strict_assert and tr_data.name != name:
-            raise RuntimeError(f"StopWatch {end_type}: {name!r}, does not match latest start: {tr_data.name!r}")
 
         # if the top element on stack doesn't match "name", need to pop off things from the stack
         # till it matches to maximally negate the possible inconsistencies
