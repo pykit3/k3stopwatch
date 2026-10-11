@@ -273,10 +273,12 @@ class StopWatch:
             self._last_trace_report = self._reported_traces
             self._last_aggregated_report = agg_report
             # Hit callbacks
-            self._export_tracing_func(reported_traces=self._reported_traces)
-            self._export_aggregated_timers_func(aggregated_report=agg_report)
-
-            self._reset()  # Clear out stats to prevent duplicate reporting
+            try:
+                self._export_tracing_func(reported_traces=self._reported_traces)
+                self._export_aggregated_timers_func(aggregated_report=agg_report)
+            finally:
+                # A failed export must not leak into the next root; the last reports above still hold its data.
+                self._reset()  # Clear out stats to prevent duplicate reporting
 
     def cancel(self, name):
         """Cancels a stopwatch span (must match latest started span).

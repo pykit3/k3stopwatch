@@ -134,6 +134,38 @@ class TestK3stopwatch(unittest.TestCase):
         trace_names = [t.log_name for t in traces]
         self.assertEqual(["root"], trace_names)
 
+    def test_export_raises(self):
+        now = [0]
+
+        def export_tracing(reported_traces):
+            raise ValueError("export failed")
+
+        sw = k3stopwatch.StopWatch(time_func=lambda: now[0], export_tracing_func=export_tracing)
+
+        sw.start("root")
+        sw.start("child")
+        now[0] += 1
+        sw.end("child")
+        with self.assertRaises(ValueError):
+            sw.end("root")
+
+        # The last report still holds the failed root's data.
+        report = sw.get_last_aggregated_report()
+        self.assertEqual({"root": [1000.0, 1, None], "root#child": [1000.0, 1, None]}, report.aggregated_values)
+
+        # The next root reports none of the failed root's data.
+        sw.start("root")
+        now[0] += 2
+        with self.assertRaises(ValueError):
+            sw.end("root")
+
+        report = sw.get_last_aggregated_report()
+        self.assertEqual({"root": [2000.0, 1, None]}, report.aggregated_values)
+
+        traces = sw.get_last_trace_report()
+        trace_names = [t.log_name for t in traces]
+        self.assertEqual(["root"], trace_names)
+
     def test_timer_after_cancel_of_same_name(self):
         now = [0]
         sw = k3stopwatch.StopWatch(time_func=lambda: now[0])
